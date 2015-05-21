@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -18,15 +19,50 @@ public class Sample {
 
     private static final String serverURL = "http://vop.baidu.com/server_api";
     private static String token = "24.ccb911394c54311ca4599b31dfa573cb.2592000.1433084235.282335-5492810";
-    private static final String testFileName = "res//sound2.wav";
+    private static String testFileName;
     //put your own params here
     private static final String apiKey = "5492810";
     private static final String secretKey = "KUAUpXY0PygQ5DGvXGbMNDwB";
     private static final String cuid = "74rMnbY1u3QHpOHudUKGYO6d7BsFN3jc";
-
+    private static FileOutputStream out=null;
+    
     public static void main(String[] args) throws Exception {
         //getToken();
-        method1();
+    	out = new FileOutputStream(new File("res//caption.srt"));
+    	String recognization;
+        /**
+         * 写字幕文件
+         */
+    	int duration=10;
+    	System.out.println("ready_write");
+    	for(int i=1;i<=9;++i)
+    	{
+    		System.out.println(i);
+    		testFileName = "res//audio//target_"+String.valueOf(i)+".wav";
+    		try
+    		{
+	    		recognization=method1();
+		        out.write((String.valueOf(i)+"\n").getBytes());
+		        int second=(i-1)*duration;
+		        String hour=convert_to_time(second/3600);
+		        String minute=convert_to_time(second%3600/60);
+		        String second_tmp=convert_to_time(second%60);
+		        out.write((hour+":"+minute+":"+second_tmp+",000 ").getBytes());
+		        out.write("--> ".getBytes());
+		        
+		        second=i*duration;
+		        hour=convert_to_time(second/3600);
+		        minute=convert_to_time(second%3600/60);
+		        second_tmp=convert_to_time(second%60);
+		        out.write((hour+":"+minute+":"+second_tmp+",000\n").getBytes());
+		        
+		        out.write((recognization+"\n\n").getBytes());
+		        System.out.println("all_done");
+    		}
+    		catch(Exception e){
+    			System.out.println("出错了"+String.valueOf(i));
+    		}
+    	}
         //method2();
     }
 
@@ -37,14 +73,14 @@ public class Sample {
         token = new JSONObject(printResponse(conn)).getString("access_token");
     }
 
-    private static void method1() throws Exception {
+    private static String method1() throws Exception {
         File pcmFile = new File(testFileName);
         HttpURLConnection conn = (HttpURLConnection) new URL(serverURL).openConnection();
 
         // construct params
         JSONObject params = new JSONObject();
         params.put("format", "wav");
-        params.put("rate", 8000);
+        params.put("rate", 16000);
         params.put("channel", "1");
         params.put("token", token);
         params.put("cuid", cuid);
@@ -65,7 +101,8 @@ public class Sample {
         wr.flush();
         wr.close();
 
-        printResponse(conn);
+        String[] a=printResponse(conn).split("\",");
+        return a[1].substring(1);
     }
 
     private static void method2() throws Exception {
@@ -103,8 +140,8 @@ public class Sample {
             response.append('\r');
         }
         rd.close();
-        System.out.println(new JSONObject(response.toString()).toString(4));
-        return response.toString();
+        //System.out.println(new JSONObject(response.toString()).toString(4));
+        return new JSONObject(response.toString()).get("result").toString();
     }
 
     private static byte[] loadFile(File file) throws IOException {
@@ -127,5 +164,17 @@ public class Sample {
 
         is.close();
         return bytes;
+    }
+    
+    private static String convert_to_time(int x)
+    {
+    	if(x/10==0)
+    	{
+    		return "0"+String.valueOf(x);
+    	}
+    	else
+    	{
+    		return String.valueOf(x);	
+    	}
     }
 }
