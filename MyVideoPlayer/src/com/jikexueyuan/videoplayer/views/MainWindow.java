@@ -158,7 +158,14 @@ public class MainWindow extends JFrame {
 		});
 		btnStop.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				PlayMain.stop();
+				
+					try {
+						PlayMain.stop();
+					} catch (Exception e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				
 			}
 		});
 	}

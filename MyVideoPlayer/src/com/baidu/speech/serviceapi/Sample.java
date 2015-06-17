@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -84,13 +85,23 @@ public class Sample {
         
         try 
         {
-        	String[] a=printResponse(conn).split("\",");
-        	return a[1].substring(1);
+        	//System.out.println("识别结果level1"+printResponse(conn));
+        	if(lan=="en")
+        	{
+        		String[] a=printResponse(conn).split("\",");
+        		return a[1].substring(1);
+        	}
+        	else if(lan=="zh")
+        	{
+        		String a=printResponse(conn);
+        		return a.substring(1,a.length()-1);
+        	}
         }
         catch (Exception e)
         {
         	return "error";
         }
+		return "error";
         
     }
 
@@ -110,7 +121,8 @@ public class Sample {
         rd.close();
         //System.out.println(new JSONObject(response.toString()).toString(4));
         System.out.println(response.toString());
-        return new JSONObject(response.toString()).get("result").toString();
+        String utf8_string= URLDecoder.decode(response.toString(), "utf-8");
+        return new JSONObject(utf8_string).get("result").toString();
     }
     
     private static String printResponse1(HttpURLConnection conn) throws Exception {

@@ -10,6 +10,7 @@ import java.net.URLEncoder;
 
 import javax.swing.JFileChooser;
 import javax.swing.SwingWorker;
+import javax.swing.UIManager;
 
 import uk.co.caprica.vlcj.binding.LibVlc;
 import uk.co.caprica.vlcj.player.media.Media;
@@ -27,17 +28,19 @@ import org.slf4j.LoggerFactory;
 public class PlayMain {
 
 	static MainWindow frame;
-	private static final String NATIVE_LIBRARY_SEARCH_PATH = "F:/学习/交大/作业/大二下/软件工程/大作业/播放器/vlc-2.2.0-win64/vlc-2.2.0";
+	private static final String NATIVE_LIBRARY_SEARCH_PATH = "res/vlc/vlc-2.2.0";
 	public static convert video;
 	public static Thread t1;
+	public static File file;
 	
 	public static void main(String[] args) {
-		NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), NATIVE_LIBRARY_SEARCH_PATH);
+		NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), getPath()+NATIVE_LIBRARY_SEARCH_PATH);
         System.out.println(LibVlc.INSTANCE.libvlc_get_version());
 
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
+					UIManager.setLookAndFeel("com.jtattoo.plaf.bernstein.BernsteinLookAndFeel");
 					frame = new MainWindow();
 					frame.setVisible(true);
 					String options[] = {"--subsdec-encoding=utf8"};
@@ -56,10 +59,7 @@ public class PlayMain {
 							}
 						}
 
-						private void publish(int i) {
-							// TODO Auto-generated method stub
-							
-						}
+
 
 						protected void process(java.util.List<Integer> chunks) {
 							for (int v : chunks) {
@@ -77,14 +77,26 @@ public class PlayMain {
 
 	public static void play() {
 		frame.getMediaPlayer().play();
+		//if(t1!=null) t1.notify();
+		System.out.println(getPath()+"res\\caption\\"+
+		frame.getMediaPlayer().getMediaMeta().getTitle()+".srt");
+		frame.getMediaPlayer().setSubTitleFile(getPath()+
+		"res//caption//"+frame.getMediaPlayer().getMediaMeta().getTitle()+".srt");
 	}
 
 	public static void pause() {
 		frame.getMediaPlayer().pause();
 	}
 
-	public static void stop() {
-		frame.getMediaPlayer().stop();
+	public static void stop() throws Exception{
+		try{
+			frame.getMediaPlayer().stop();
+		}
+		catch(Exception e)
+		{
+			System.out.println("关闭部分失败");
+		}
+		//if(t1!=null) t1.wait();
 	}
 
 	public static void jumpTo(float to) {
@@ -113,22 +125,40 @@ public class PlayMain {
 				System.out.println("dog");				
 				e.printStackTrace();
 			}
+	        //String[] options={"--freetype-fontsize","20"};
 			frame.getMediaPlayer().playMedia(t);
-			
 			 //开始识别
-	        video=new convert(10,s,frame);
+			if(video!=null) 
+			{
+				if(video.finished!=true)
+				{
+					System.out.println(video.file.delete());
+				}
+				t1.stop();
+			}
+			try {
+				Thread.currentThread().sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			frame.getMediaPlayer().pause();
+	        video=new convert(10,s,frame,getPath());
 	        t1 = new Thread(video);
 			t1.start();
-			frame.getMediaPlayer().pause();
+			
+			
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public static void openSubtitle() {
 		JFileChooser chooser = new JFileChooser();
 		int v = chooser.showOpenDialog(null);
 		if (v == JFileChooser.APPROVE_OPTION) {
-			File file = chooser.getSelectedFile();
+			file = chooser.getSelectedFile();
 			frame.getMediaPlayer().setSubTitleFile(file);
+			t1.suspend();
 		}
 	}
 	
@@ -143,4 +173,22 @@ public class PlayMain {
 		t1.stop();
 		System.exit(0);
 	}
+	
+	 public static String getPath(){  
+		 	/*
+	        String filePath = System.getProperty("java.class.path");  
+	        String pathSplit = System.getProperty("path.separator");//windows下是";",linux下是":"  
+	          
+	        if(filePath.contains(pathSplit)){  
+	            filePath = filePath.substring(0,filePath.indexOf(pathSplit));  
+	        }else if (filePath.endsWith(".jar")) {
+	            filePath = filePath.substring(0, filePath.lastIndexOf(File.separator) + 1);  
+	              
+	        }  
+	        
+	        return filePath;  
+	        */
+		 	return "";
+	    }  
+	
 }

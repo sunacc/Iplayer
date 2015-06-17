@@ -46,7 +46,7 @@ public class caption {
 		FileInputStreamDemo(root);
 	}
 	
-	public void writecaption() throws FileNotFoundException
+	public void writecaption() throws IOException
 	{
 		out = new FileOutputStream(new File(root));
 		System.out.println("ready_write");
@@ -89,6 +89,7 @@ public class caption {
     			System.out.println("出错了"+String.valueOf(i));
     		}
     	}
+    	out.close();
 	}
 	
 	public void FileInputStreamDemo(String path){

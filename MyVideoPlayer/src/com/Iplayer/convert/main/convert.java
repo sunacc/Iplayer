@@ -29,15 +29,17 @@ public class convert implements Runnable {
 	static MainWindow frame;
 	public File file = null;
 	public boolean finished=false;
+	public String root;
 	
-	public convert(int x,String y,MainWindow z)
+	public convert(int x,String y,MainWindow z,String k)
 	{
 		interval=x;
 		videofilename=y;
 		frame=z;
-		String[] tmp=y.split("\\\\");
-		String tmpx=((tmp[tmp.length-1]).split("\\."))[0];
-		captionfilename="res//caption//"+tmpx+".srt";
+		root=k;
+		//String[] tmp=y.split("\\\\");
+		//String tmpx=((tmp[tmp.length-1]).split("\\."))[0];
+		captionfilename=root+"res//caption//"+frame.getMediaPlayer().getMediaMeta().getTitle()+".srt";
 		file=new File(captionfilename);
 	}
 	
@@ -65,7 +67,8 @@ public class convert implements Runnable {
 					cut_audio(k,interval);
 					String temp="";
 					try {
-						temp = Baidurecognization.method1("res//audio//"+filename+"_"+ String.valueOf(k)+".wav","en");
+						temp = Baidurecognization.method1(root+"res//audio//"+filename+"_"+ String.valueOf(k)+".wav","en");
+						System.out.println("识别结果"+temp);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -74,6 +77,10 @@ public class convert implements Runnable {
 					{
 						cap.content[k]=temp;
 					}
+					else
+					{
+						cap.content[k]="";
+					}
 					//System.out.println(k);
 					//System.out.println(cap.time[k]);
 					//System.out.println(cap.content[k]);
@@ -81,7 +88,7 @@ public class convert implements Runnable {
 						cap.writecaption();
 						//if((int)Math.ceil(frame.getMediaPlayer().getTime()/10000)>=i)
 						//{
-							
+							System.out.println((int)Math.ceil(frame.getMediaPlayer().getTime()/10000));
 							frame.getMediaPlayer().setSubTitleFile(file);
 						//}
 						if(k==1)
@@ -89,6 +96,9 @@ public class convert implements Runnable {
 							frame.getMediaPlayer().play();
 						}
 					} catch (FileNotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -119,8 +129,8 @@ public class convert implements Runnable {
 		{
 			finished=true;
 			System.out.println("312321321");
+			frame.getMediaPlayer().play();
 			frame.getMediaPlayer().setSubTitleFile(file);
-			
 		}
 		frame.getMediaPlayer().setSubTitleFile(file);
 		System.out.println("good");
@@ -137,7 +147,7 @@ public class convert implements Runnable {
 	public void generate_whole_audio()
 	{
 		File source = new File(videofilename);
-		File target = new File("res//audio//"+filename+".wav");
+		File target = new File(root+"res//audio//"+filename+".wav");
 		AudioAttributes audio = new AudioAttributes();
 		audio.setCodec("pcm_s16le");
 		audio.setBitRate(new Integer(128000));
@@ -178,8 +188,8 @@ public class convert implements Runnable {
 	
 	public void cut_audio(int x,int duration)
 	{
-		File source = new File("res//audio//"+filename+".wav");
-		File target = new File("res//audio//"+filename+"_"+ String.valueOf(x)+".wav");
+		File source = new File(root+"res//audio//"+filename+".wav");
+		File target = new File(root+"res//audio//"+filename+"_"+ String.valueOf(x)+".wav");
 		AudioAttributes audio = new AudioAttributes();
 		audio.setCodec("pcm_s16le");
 		audio.setBitRate(new Integer(128000));

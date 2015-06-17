@@ -8,5 +8,6 @@
 	<classpathentry kind="lib" path="lib/slf4j-api-1.7.10.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-nop-1.7.10.jar"/>
 	<classpathentry kind="lib" path="lib/jave-1.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/JTattoo-1.6.11.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
