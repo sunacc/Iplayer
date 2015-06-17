@@ -1,5 +1,6 @@
 package com.jikexueyuan.videoplayer.main;
 
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -13,6 +14,8 @@ import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 
 import uk.co.caprica.vlcj.binding.LibVlc;
+import uk.co.caprica.vlcj.player.Logo;
+import uk.co.caprica.vlcj.player.Marquee;
 import uk.co.caprica.vlcj.player.media.Media;
 import uk.co.caprica.vlcj.runtime.RuntimeUtil;
 
@@ -22,6 +25,8 @@ import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
 
 import uk.co.caprica.vlcj.binding.*;
+import uk.co.caprica.vlcj.binding.internal.libvlc_logo_position_e;
+import uk.co.caprica.vlcj.binding.internal.libvlc_marquee_position_e;
 
 import org.slf4j.Logger;  
 import org.slf4j.LoggerFactory;
@@ -58,8 +63,6 @@ public class PlayMain {
 								Thread.sleep(100);
 							}
 						}
-
-
 
 						protected void process(java.util.List<Integer> chunks) {
 							for (int v : chunks) {
@@ -121,12 +124,38 @@ public class PlayMain {
 				 t = URLDecoder.decode(s, "ascii");
 				System.out.println(t);
 			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
-				System.out.println("dog");				
 				e.printStackTrace();
 			}
-	        //String[] options={"--freetype-fontsize","20"};
-			frame.getMediaPlayer().playMedia(t);
+	        frame.getMediaPlayer().prepareMedia(t);
+	        String videotitle=frame.getMediaPlayer().getMediaMeta().getTitle();
+	        /**
+	         * 放缓冲部分
+	         */
+	        frame.getMediaPlayer().playMedia(getPath()+"res//video//logo1.jpg");
+	        Marquee marquee1 = Marquee.marquee()
+				    .text("Caption Recognizing...")
+				    .size(30)
+				    .colour(Color.WHITE)
+				    .timeout(10000)
+				    .position(libvlc_marquee_position_e.top_left)
+				    .opacity(0.8f)
+				    .enable();
+			Marquee marquee2 = Marquee.marquee()
+				    .text("Caption Is Automatically Recognized...")
+				    .size(30)
+				    .colour(Color.WHITE)
+				    .timeout(500000)
+				    .position(libvlc_marquee_position_e.top_left)
+				    .opacity(0.8f)
+				    .enable();
+			Marquee marquee3 = Marquee.marquee()
+				    .text("Caption Has Already Existed...")
+				    .size(30)
+				    .colour(Color.WHITE)
+				    .timeout(10000)
+				    .position(libvlc_marquee_position_e.top_left)
+				    .opacity(0.8f)
+				    .enable();
 			 //开始识别
 			if(video!=null) 
 			{
@@ -136,18 +165,26 @@ public class PlayMain {
 				}
 				t1.stop();
 			}
-			try {
-				Thread.currentThread().sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			frame.getMediaPlayer().pause();
-	        video=new convert(10,s,frame,getPath());
+	        video=new convert(10,t,frame,getPath(),videotitle);
 	        t1 = new Thread(video);
 			t1.start();
+			marquee1.apply(frame.getMediaPlayer());
+			while(!video.started) 
+			{
+				try {
+					Thread.currentThread().sleep(2000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
 			
-			
+			//第一段已经识别好了
+			frame.getMediaPlayer().enableMarquee(false);
+			video.settingcaption=true;
+			frame.getMediaPlayer().playMedia(t);
+			frame.getMediaPlayer().setSubTitleFile(video.file);
+			if(video.finished) marquee3.apply(frame.getMediaPlayer());
+			else marquee2.apply(frame.getMediaPlayer());
 		}
 	}
 

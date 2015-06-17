@@ -6,9 +6,13 @@ import it.sauronsoftware.jave.EncoderException;
 import it.sauronsoftware.jave.EncodingAttributes;
 import it.sauronsoftware.jave.InputFormatException;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
+import uk.co.caprica.vlcj.binding.internal.libvlc_marquee_position_e;
+import uk.co.caprica.vlcj.player.Marquee;
 
 import com.Iplayer.convert.caption.caption;
 import com.baidu.speech.serviceapi.Sample;
@@ -30,8 +34,12 @@ public class convert implements Runnable {
 	public File file = null;
 	public boolean finished=false;
 	public String root;
+	public String videotitle;
+	public boolean started=false;
+	public boolean settingcaption=false;
+	private int count=0;
 	
-	public convert(int x,String y,MainWindow z,String k)
+	public convert(int x,String y,MainWindow z,String k,String m)
 	{
 		interval=x;
 		videofilename=y;
@@ -39,13 +47,15 @@ public class convert implements Runnable {
 		root=k;
 		//String[] tmp=y.split("\\\\");
 		//String tmpx=((tmp[tmp.length-1]).split("\\."))[0];
-		captionfilename=root+"res//caption//"+frame.getMediaPlayer().getMediaMeta().getTitle()+".srt";
+		captionfilename=root+"res//caption//"+m+".srt";
+		videotitle=m;
 		file=new File(captionfilename);
 	}
 	
 	
 	@Override
 	public void run() {
+		Marquee marquee;
 		if(!file.exists()) 
 		{
 			System.out.println(1);
@@ -86,14 +96,22 @@ public class convert implements Runnable {
 					//System.out.println(cap.content[k]);
 					try {
 						cap.writecaption();
-						//if((int)Math.ceil(frame.getMediaPlayer().getTime()/10000)>=i)
-						//{
-							System.out.println((int)Math.ceil(frame.getMediaPlayer().getTime()/10000));
-							frame.getMediaPlayer().setSubTitleFile(file);
-						//}
-						if(k==1)
+						started=true;
+						count++;
+						if(settingcaption) 
 						{
-							frame.getMediaPlayer().play();
+							frame.getMediaPlayer().enableMarquee(false);
+							 marquee= Marquee.marquee()
+								    .text("Caption Is Automatically Recognized..completed "+String.valueOf(count)+"/"+String.valueOf(max_time))
+								    .size(30)
+								    .colour(Color.WHITE)
+								    .timeout(100000)
+								    .position(libvlc_marquee_position_e.top_left)
+								    .opacity(0.8f)
+								    .enable();
+							marquee.apply(frame.getMediaPlayer());
+							
+							frame.getMediaPlayer().setSubTitleFile(file);
 						}
 					} catch (FileNotFoundException e) {
 						// TODO Auto-generated catch block
@@ -128,9 +146,9 @@ public class convert implements Runnable {
 		else
 		{
 			finished=true;
-			System.out.println("312321321");
-			frame.getMediaPlayer().play();
-			frame.getMediaPlayer().setSubTitleFile(file);
+			started=true;
+			System.out.println("已有字幕，直接读取");
+			if(settingcaption) frame.getMediaPlayer().setSubTitleFile(file);
 		}
 		frame.getMediaPlayer().setSubTitleFile(file);
 		System.out.println("good");
