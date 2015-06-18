@@ -23,7 +23,7 @@ public class convert implements Runnable {
 	/**
 	 * @param args
 	 */
-	private static int max_time;
+	public static int max_time;
 	public int interval=10;
 	public String videofilename;
 	public String captionfilename;
@@ -38,6 +38,7 @@ public class convert implements Runnable {
 	public boolean started=false;
 	public boolean settingcaption=false;
 	private int count=0;
+	public caption cap = null;
 	
 	public convert(int x,String y,MainWindow z,String k,String m)
 	{
@@ -60,7 +61,7 @@ public class convert implements Runnable {
 		{
 			System.out.println(1);
 			generate_whole_audio();
-			caption cap = null;
+			
 			
 			try {
 				cap = new caption(max_time,interval,captionfilename);
@@ -80,7 +81,6 @@ public class convert implements Runnable {
 						temp = Baidurecognization.method1(root+"res//audio//"+filename+"_"+ String.valueOf(k)+".wav","en");
 						System.out.println("识别结果"+temp);
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					if(temp!="error")
@@ -96,7 +96,10 @@ public class convert implements Runnable {
 					//System.out.println(cap.content[k]);
 					try {
 						cap.writecaption();
-						started=true;
+						if(k==2)
+						{
+							started=true;
+						}
 						count++;
 						if(settingcaption) 
 						{

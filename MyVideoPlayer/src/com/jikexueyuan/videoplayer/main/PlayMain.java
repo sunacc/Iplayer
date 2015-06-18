@@ -37,6 +37,7 @@ public class PlayMain {
 	public static convert video;
 	public static Thread t1;
 	public static File file;
+	private static boolean stop=false;
 	
 	public static void main(String[] args) {
 		NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), getPath()+NATIVE_LIBRARY_SEARCH_PATH);
@@ -48,19 +49,43 @@ public class PlayMain {
 					UIManager.setLookAndFeel("com.jtattoo.plaf.bernstein.BernsteinLookAndFeel");
 					frame = new MainWindow();
 					frame.setVisible(true);
-					String options[] = {"--subsdec-encoding=utf8"};
-					frame.getMediaPlayer().prepareMedia("/Users/acely/Movies/BBC Earth.The.Biography/Earth.The.Biography.UNRATED.Ep04.2007.BluRay.720p.x264.DTS-WiKi.chs.mkv",options);
+					//String options[] = {"--subsdec-encoding=utf8"};
+					//frame.getMediaPlayer().prepareMedia("/Users/acely/Movies/BBC Earth.The.Biography/Earth.The.Biography.UNRATED.Ep04.2007.BluRay.720p.x264.DTS-WiKi.chs.mkv",options);
 					//					frame.getMediaPlayer().playMedia("/Users/acely/Movies/BBC Earth.The.Biography/Earth.The.Biography.UNRATED.Ep04.2007.BluRay.720p.x264.DTS-WiKi.chs.mkv",options);
 					new SwingWorker<String, Integer>() {
 
 
-						protected String doInBackground() throws Exception {
+						protected String doInBackground(){
 							while (true) {
 								long total = frame.getMediaPlayer().getLength();
 								long curr = frame.getMediaPlayer().getTime();
 								float percent = (float)curr/total;
 								publish((int)(percent*100));
-								Thread.sleep(100);
+								try {
+									Thread.sleep(50);
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+								if(video!=null && !stop)
+								{
+									if(video.finished!=true && video.cap!=null && (int)curr/10000+1<video.max_time)
+									{
+										
+										//System.out.println(video.cap.content[(int)curr/10000+1]);
+										//System.out.println(video.cap.content[(int)curr/10000+2]);
+										//System.out.println("----------------------------------");
+										if(video.cap.content[(int)curr/10000+1]==null 
+												|| video.cap.content[(int)curr/10000+2]==null)
+										{
+											if(frame.getMediaPlayer().isPlaying()) frame.getMediaPlayer().pause();
+										}
+										else
+										{
+											if(!frame.getMediaPlayer().isPlaying())
+											frame.getMediaPlayer().play();
+										}
+									}
+								}
 							}
 						}
 
@@ -79,6 +104,7 @@ public class PlayMain {
 	}
 
 	public static void play() {
+		stop=false;
 		frame.getMediaPlayer().play();
 		//if(t1!=null) t1.notify();
 		System.out.println(getPath()+"res\\caption\\"+
@@ -88,10 +114,12 @@ public class PlayMain {
 	}
 
 	public static void pause() {
+		stop=!stop;
 		frame.getMediaPlayer().pause();
 	}
 
 	public static void stop() throws Exception{
+		stop=true;
 		try{
 			frame.getMediaPlayer().stop();
 		}
@@ -104,7 +132,7 @@ public class PlayMain {
 
 	public static void jumpTo(float to) {
 		frame.getMediaPlayer().setTime((long)(to*frame.getMediaPlayer().getLength()));
-		video.i=(int) (Math.ceil(to*frame.getMediaPlayer().getLength()/10000));
+		video.i=(int) (Math.floor(to*frame.getMediaPlayer().getLength()/10000));
 	}
 	
 	public static void setVol(int v) {
