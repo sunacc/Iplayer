@@ -11,7 +11,7 @@ Our team member is Zhao,Wang,Yan,Sun from SJTU.
 2015-5-21
 
 #Update data:
-2015-6-7  Iplayer 0.1 beta
-2015-6-17 Iplayer 0.2 beta
-2015-6-18 Iplayer 0.2.1 beta
-2016-11   进入百度语音开发大赛半决赛   
+* 2015-6-7  Iplayer 0.1 beta
+* 2015-6-17 Iplayer 0.2 beta
+* 2015-6-18 Iplayer 0.2.1 beta
+* 2016-11   进入百度语音开发大赛半决赛   
